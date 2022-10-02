@@ -6,6 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
+from selenium.webdriver.firefox.options import Options
 
 class Scrapetsy:
     # define parent class variable
@@ -43,21 +44,25 @@ class WomenGift(Scrapetsy):
 
     # define function in child class WomanGift
 
-    def get_url(self,page):
+    def get_url(self):
         print('getting url...')
+        lastpage = 'Next'
+        page = 1
+        while lastpage == 'Next':
         # real access to web
-        try:
-            driver = webdriver.Firefox(executable_path='C:/geckodriver-v0.31.0-win64/geckodriver.exe')
-            # url = 'https://www.etsy.com/search?q=gift+for+women&ref=pagination&anchor_listing_id=737271222&page=1'
-            url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={page}"
-            driver.get(url)
-            time.sleep(5)
-            response = driver.page_source
+            try:
+                options = Options()
+                options.add_argument("--headless")
+                driver = webdriver.Firefox(executable_path='C:/geckodriver-v0.31.0-win64/geckodriver.exe', options=options)
+                url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
+                driver.get(url)
+                time.sleep(5)
+                response = driver.page_source
 
-        except:
-            response = 'Invalid Format'
+            except:
+                response = 'Invalid Format'
 
-        soup = BeautifulSoup(response, 'html.parser')
+            soup = BeautifulSoup(response, 'html.parser')
 
         # f = open('response.html', 'w+', encoding="utf-8")
         # f.write(response)
@@ -66,10 +71,18 @@ class WomenGift(Scrapetsy):
         # checking file response.html
         # soup = BeautifulSoup(open('response.html', encoding = 'utf-8'),'html.parser')
 
-        soup = soup.findAll('div', {'class':'js-merch-stash-check-listing v2-listing-card wt-mr-xs-0 search-listing-card--desktop listing-card-experimental-style appears-ready'})
-        for i in soup:
-            result = i.find('a', href=True)['href']
-            print(result)
+            link_soup = soup.findAll('div', {'class':'js-merch-stash-check-listing v2-listing-card wt-mr-xs-0 search-listing-card--desktop listing-card-experimental-style appears-ready'})
+            for i in link_soup:
+                result = i.find('a', href=True)['href']
+                self.result['content'].append(result)
+
+            page_soup = soup.find('ul', {'class':'wt-action-group wt-list-inline search-pagination'})
+            page_soup = page_soup.findAll('span', {'class':'wt-screen-reader-only'})
+            lastpage = page_soup[-1].text
+
+            print(f'page {page} collected')
+            page += 1
+        return self.result['content']
 
         # collecting data
             # datacontent = {'image': '', 'name': '', 'solditem': '', 'badge': '', 'price': '', 'promotion': '',
@@ -92,7 +105,7 @@ class WomenGift(Scrapetsy):
 
 if __name__ == '__main__':
     result = WomenGift()
-    result.get_url('1')
+    print(len(result.get_url()))
 
 
 
