@@ -10,7 +10,7 @@ from selenium.webdriver.support import expected_conditions as ec
 
 class Scrapetsy:
     # define parent class variable
-    def __init__(self, scheme, host, filename, params, description):
+    def __init__(self, scheme, host, filename, params, description, geckopaths):
         self.scheme = scheme
         self.host = host
         self.params = params
@@ -18,6 +18,7 @@ class Scrapetsy:
         self.header = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'}
         self.description = description
+        self.geckopaths = geckopaths
 
     # define parent class function
     def get_page(self):
@@ -33,15 +34,16 @@ class Scrapetsy:
 # Class to get popular women gift
 class WomenGift(Scrapetsy):
     # define variable in child class WomanGift
-    def __init__(self):
-        super(WomenGift,self).__init__(
+    def __init__(self, geckopath):
+        super().__init__(
             # https://www.etsy.com/search?q=gift+for+women&ref=pagination&anchor_listing_id=737271222&page=1
-            scheme = 'https', #://
-            host = 'www.etsy.com',
-            filename = '/search', #?
-            params = {'q':'gift+for+women', 'ref':'pagination', 'anchor_listing_id':'737271222', 'page':'1'},
-            description = {'title':'Most Popular Women Gift','description':'Class to get Most Popular Women Gift'})
-
+            scheme='https',  #://
+            host='www.etsy.com',
+            filename='/search',  # ?
+            params={'q': 'gift+for+women', 'ref': 'pagination', 'anchor_listing_id': '737271222', 'page': '1'},
+            description={'title': 'Most Popular Women Gift', 'description': 'Class to get Most Popular Women Gift'},
+            geckopaths = geckopath
+        )
     # define function in child class WomanGift
 
     # Get URL Function
@@ -51,7 +53,7 @@ class WomenGift(Scrapetsy):
         # config webdriver
         options = Options()
         options.add_argument("--headless")
-        driver = webdriver.Firefox(executable_path='C:/geckodriver-v0.31.0-win64/geckodriver.exe', options=options)
+        driver = webdriver.Firefox(executable_path=self.geckopaths, options=options)
 
         # initial variable
         page = 1
@@ -92,7 +94,7 @@ class WomenGift(Scrapetsy):
         # config webdriver
         options = Options()
         options.add_argument("--headless")
-        driver = webdriver.Firefox(executable_path='C:/geckodriver-v0.31.0-win64/geckodriver.exe', options=options)
+        driver = webdriver.Firefox(executable_path=self.geckopaths, options=options)
         result = []
         data = {'image':'', 'title':'', 'price':'', 'outlet_name':'', 'link_outlet':'', 'item_sold':'', 'detail':[], 'description':'', 'reviews':'', 'url':''}
         for i in urls:
@@ -167,7 +169,7 @@ class WomenGift(Scrapetsy):
             # print(self.result['content'])
 
 if __name__ == '__main__':
-    result = WomenGift()
+    result = WomenGift(geckopath = 'C:/geckodriver-v0.31.0-win64/geckodriver.exe')
     urls = result.get_url()
     result.get_detail(urls)
 
