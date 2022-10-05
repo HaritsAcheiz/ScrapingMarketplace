@@ -1,12 +1,13 @@
 """
 all function and method for scrapetsy
 """
-
+import os
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+import json
 
 class Scrapetsy:
     # define parent class variable
@@ -27,9 +28,8 @@ class Scrapetsy:
     def get_url(self):
         self.get_url()
 
-    # def run(self):
-    #     self.get_page()
-    #     self.get_url()
+    def to_csv(self):
+        self.to_csv()
 
 # Class to get popular women gift
 class WomenGift(Scrapetsy):
@@ -110,8 +110,6 @@ class WomenGift(Scrapetsy):
                 data['price'] = prices2[-1].text
             except:
                 data['price'] = prices1.text
-            print(data['title'])
-            print(data['price'])
             data['outlet_name'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').text
             data['link_outlet'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').get_attribute('href')
             data['item_sold'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > span:nth-child(3)').text
@@ -131,47 +129,29 @@ class WomenGift(Scrapetsy):
 
         return result
 
-        # f = open('response.html', 'w+', encoding="utf-8")
-        # f.write(response)
-        # f.close()
+    def to_file(self,data,filepath):
+        print('Creating file...')
+        ext = filepath.split(".")[-1]
+        dir = filepath.rsplit("/",1)[0]
+        if ext == 'json':
+            try:
+                os.mkdir(dir)
+            except:
+                pass
+            f = open(filepath, 'w+', encoding="utf-8")
+            f.write(json.dump(data))
+            f.close()
+        else:
+            pass
+        print(f'{filepath} created')
 
-
-            # link_soup = soup.findAll('div', {'class':'js-merch-stash-check-listing v2-listing-card wt-mr-xs-0 search-listing-card--desktop listing-card-experimental-style appears-ready'})
-            # for i in link_soup:
-            #     result = i.find('a', href=True)['href']
-            #     self.result['content'].append(result)
-            #
-            # page_soup = soup.find('ul', {'class':'wt-action-group wt-list-inline search-pagination'})
-            # page_soup = page_soup.findAll('span', {'class':'wt-screen-reader-only'})
-            # lastpage = page_soup[-1].text
-            #
-            # print(f'page {page} collected')
-            # page += 1
-        # return self.result['content']
-
-        # collecting data
-            # datacontent = {'image': '', 'name': '', 'solditem': '', 'badge': '', 'price': '', 'promotion': '',
-            #                'shop': '', 'link': ''}
-            # soup = BeautifulSoup(response.text, 'html.parser')
-            # soup = soup.find('ul', {'class':'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
-            # soup = soup.findAll('li')
-            # for i in soup:
-            # #     if i.find('img') != None:
-            # #         datacontent['image'] = i.find('img')['src']
-            # #     else:
-            # #         None
-            #     if i.find('h3',{'class':'wt-text-caption v2-listing-card__title wt-text-truncate'}) != None:
-            #         datacontent['name'] = i.find('h3',{'class':'wt-text-caption v2-listing-card__title wt-text-truncate'}).text
-            #     else:
-            #         None
-            #     self.result['content'].append(datacontent)
-            # # for i in self.result['content']:
-            # print(self.result['content'])
 
 if __name__ == '__main__':
-    result = WomenGift(geckopath = 'C:/geckodriver-v0.31.0-win64/geckodriver.exe')
-    urls = result.get_url()
-    result.get_detail(urls)
+    scraper = WomenGift(geckopath = 'C:/geckodriver-v0.31.0-win64/geckodriver.exe')
+    urls = scraper.get_url()
+    result = scraper.get_detail(urls)
+    scraper.to_file(data = result, filepath='/result/result.json')
+
 
 
 
