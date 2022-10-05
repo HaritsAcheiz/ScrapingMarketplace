@@ -97,13 +97,24 @@ class WomenGift(Scrapetsy):
         data = {'image':'', 'title':'', 'price':'', 'outlet_name':'', 'link_outlet':'', 'item_sold':'', 'detail':[], 'description':'', 'reviews':'', 'url':''}
         for i in urls:
             driver.get(i)
-            content = WebDriverWait(driver, 10).until(ec.presence_of_element_located((By.CSS_SELECTOR, '.wt-pt-xs-5')))
+            content = WebDriverWait(driver, 10).until(ec.presence_of_element_located((By.ID, 'content')))
             data['image'] = content.find_element(By.CSS_SELECTOR,'li.carousel-pane:nth-child(1) > img:nth-child(1)').get_attribute('src')
             data['title'] = content.find_element(By.CSS_SELECTOR, 'h1.wt-text-body-03').text
-            data['price'] = content.find_element(By.CSS_SELECTOR, 'wt-text-title-03 > span:nth-child(2)').text
+
+            # get price
+            prices1 = content.find_element(By.XPATH,"//p[@class='wt-text-title-03 wt-mr-xs-1']")
+            prices2 = prices1.find_elements(By.TAG_NAME, 'span')
+            try:
+                data['price'] = prices2[-1].text
+            except:
+                data['price'] = prices1.text
+            print(data['title'])
+            print(data['price'])
             data['outlet_name'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').text
             data['link_outlet'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').get_attribute('href')
             data['item_sold'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > span:nth-child(3)').text
+
+            # get detail
             details = content.find_element(By.CSS_SELECTOR, 'ul.wt-text-body-01')
             details = details.find_elements(By.TAG_NAME, 'li')
             for j in details:
@@ -111,8 +122,8 @@ class WomenGift(Scrapetsy):
             data['description'] = content.find_element(By.CSS_SELECTOR, 'p.wt-break-word').text
             data['reviews'] = content.find_element(By.CSS_SELECTOR, 'h2.wt-mr-xs-2').text
             data['url'] = i
-        result.append(data)
 
+        result.append(data)
         driver.quit()
         print('getting details completed')
 
@@ -159,7 +170,6 @@ if __name__ == '__main__':
     result = WomenGift()
     urls = result.get_url()
     result.get_detail(urls)
-    print(result)
 
 
 
