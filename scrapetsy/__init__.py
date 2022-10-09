@@ -5,8 +5,9 @@ import os
 
 import selenium.webdriver.firefox.options
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.chrome.options import Options
+import selenium.webdriver.chrome.options
+# from selenium.webdriver.firefox.options import Options
+# from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
@@ -15,7 +16,8 @@ import csv
 import requests
 from bs4 import BeautifulSoup
 from lxml import etree
-import time
+# import time
+from user_agent import generate_user_agent
 
 
 class Scrapetsy:
@@ -74,6 +76,11 @@ class WomenGift(Scrapetsy):
                 if drivertype == 'geckodriver.exe':
                     options = selenium.webdriver.firefox.options.Options()
                     options.add_argument("--headless")
+                    options.add_argument("--no-sandbox")
+                    options.add_argument("--disable-gpu")
+                    options.add_argument("--disable-translate")
+                    # options.add_argument(f"--proxy-server={ip}")
+                    options.add_argument(f"user-agent={generate_user_agent()}")
                     driver = webdriver.Firefox(executable_path=self.webdriver_path, options=options)
 
                     # looping for page
@@ -81,7 +88,7 @@ class WomenGift(Scrapetsy):
                     driver.get(url)
 
                     # Wait for response until ID 'content' located
-                    content = WebDriverWait(driver, 20).until(ec.presence_of_element_located((By.ID, 'content')))
+                    content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.ID, 'content')))
 
                     # Selecting Element to get url
                     parent = content.find_element(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul')
@@ -100,6 +107,11 @@ class WomenGift(Scrapetsy):
                 else:
                     options = selenium.webdriver.chrome.options.Options()
                     options.add_argument("--headless")
+                    options.add_argument("--no-sandbox")
+                    options.add_argument("--disable-gpu")
+                    options.add_argument("--disable-translate")
+                    # options.add_argument(f"--proxy-server={ip}")
+                    options.add_argument(f"user-agent={generate_user_agent()}")
                     driver = webdriver.Chrome(executable_path=self.webdriver_path, options=options)
 
                     # looping for page
@@ -107,7 +119,7 @@ class WomenGift(Scrapetsy):
                     driver.get(url)
 
                     # Wait for response until ID 'content' located
-                    content = WebDriverWait(driver, 20).until(ec.presence_of_element_located((By.ID, 'content')))
+                    content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.ID, 'content')))
 
                     # Selecting Element to get url
                     parent = content.find_element(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul')
@@ -130,22 +142,23 @@ class WomenGift(Scrapetsy):
                 # config webdriver
                 drivertype = self.webdriver_path.rsplit("/", 1)[1]
                 if drivertype == 'geckodriver.exe':
-                    options = selenium.webdriver.firefox.options.Options()
-                    options.add_argument("--headless")
-                    driver = webdriver.Firefox(executable_path=self.webdriver_path, options=options)
 
                     # looping for page
                     while 1:
                         try:
-                            if page_counter > 20:
-                                time.sleep(300)
-                            else:
-                                pass
+                            options = selenium.webdriver.firefox.options.Options()
+                            options.add_argument("--headless")
+                            options.add_argument("--no-sandbox")
+                            options.add_argument("--disable-gpu")
+                            options.add_argument("--disable-translate")
+                            # options.add_argument(f"--proxy-server={ip}")
+                            options.add_argument(f"user-agent={generate_user_agent()}")
+                            driver = webdriver.Firefox(executable_path=self.webdriver_path, options=options)
                             url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
                             driver.get(url)
 
                             # Wait for response until ID 'content' located
-                            content = WebDriverWait(driver, 20).until(ec.presence_of_element_located((By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[64]/div/div/a[1]')))
+                            content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[64]/div/div/a[1]')))
 
                             # Selecting Element to get url
                             parent = content.find_element(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul')
@@ -162,6 +175,7 @@ class WomenGift(Scrapetsy):
                                 except FileNotFoundError:
                                     break
                             page += 1
+                            # page_counter += 1
                         except FileNotFoundError:
                             break
                     # Close driver
@@ -169,18 +183,22 @@ class WomenGift(Scrapetsy):
 
                     print('getting url completed')
                 else:
-                    options = selenium.webdriver.chrome.options.Options()
-                    options.add_argument("--headless")
-                    driver = webdriver.Chrome(executable_path=self.webdriver_path, options=options)
-
                     # looping for page
                     while 1:
                         try:
+                            options = selenium.webdriver.chrome.options.Options()
+                            options.add_argument("--headless")
+                            options.add_argument("--no-sandbox")
+                            options.add_argument("--disable-gpu")
+                            options.add_argument("--disable-translate")
+                            # options.add_argument(f"--proxy-server={ip}")
+                            options.add_argument(f"user-agent={generate_user_agent()}")
+                            driver = webdriver.Chrome(executable_path=self.webdriver_path, options=options)
                             url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
                             driver.get(url)
 
                             # Wait for response until ID 'content' located
-                            content = WebDriverWait(driver, 20).until(ec.presence_of_element_located((By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[64]/div/div/a[1]')))
+                            content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[64]/div/div/a[1]')))
 
                             # Selecting Element to get url
                             parent = content.find_element(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul')
@@ -277,7 +295,7 @@ class WomenGift(Scrapetsy):
                 driver = webdriver.Firefox(executable_path=self.webdriver_path, options=options)
 
                 driver.get(url)
-                content = WebDriverWait(driver, 20).until(ec.presence_of_element_located((By.ID, 'content')))
+                content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.ID, 'content')))
                 data['image'] = content.find_element(By.CSS_SELECTOR, 'li.carousel-pane:nth-child(1) > img:nth-child(1)').get_attribute('src')
                 data['title'] = content.find_element(By.CSS_SELECTOR, 'h1.wt-text-body-03').text
 
@@ -311,7 +329,7 @@ class WomenGift(Scrapetsy):
                 driver = webdriver.Chrome(executable_path=self.webdriver_path, options=options)
 
                 driver.get(url)
-                content = WebDriverWait(driver, 20).until(ec.presence_of_element_located((By.ID, 'content')))
+                content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.ID, 'content')))
                 data['image'] = content.find_element(By.CSS_SELECTOR, 'li.carousel-pane:nth-child(1) > img:nth-child(1)').get_attribute(
                     'src')
                 data['title'] = content.find_element(By.CSS_SELECTOR, 'h1.wt-text-body-03').text
