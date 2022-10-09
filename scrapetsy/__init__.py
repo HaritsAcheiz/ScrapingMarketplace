@@ -2,8 +2,11 @@
 all function and method for Scrapetsy
 """
 import os
+
+import selenium.webdriver.firefox.options
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
@@ -12,6 +15,7 @@ import csv
 import requests
 from bs4 import BeautifulSoup
 from lxml import etree
+import time
 
 
 class Scrapetsy:
@@ -66,10 +70,10 @@ class WomenGift(Scrapetsy):
         if self.driver_mode is True:
             if pagination is False:
                 # config webdriver
-                options = Options()
-                options.add_argument("--headless")
                 drivertype = self.webdriver_path.rsplit("/", 1)[1]
                 if drivertype == 'geckodriver.exe':
+                    options = selenium.webdriver.firefox.options.Options()
+                    options.add_argument("--headless")
                     driver = webdriver.Firefox(executable_path=self.webdriver_path, options=options)
 
                     # looping for page
@@ -94,6 +98,8 @@ class WomenGift(Scrapetsy):
 
                     print('getting url completed')
                 else:
+                    options = selenium.webdriver.chrome.options.Options()
+                    options.add_argument("--headless")
                     driver = webdriver.Chrome(executable_path=self.webdriver_path, options=options)
 
                     # looping for page
@@ -122,15 +128,19 @@ class WomenGift(Scrapetsy):
 
             if pagination is True:
                 # config webdriver
-                options = Options()
-                options.add_argument("--headless")
                 drivertype = self.webdriver_path.rsplit("/", 1)[1]
                 if drivertype == 'geckodriver.exe':
+                    options = selenium.webdriver.firefox.options.Options()
+                    options.add_argument("--headless")
                     driver = webdriver.Firefox(executable_path=self.webdriver_path, options=options)
 
                     # looping for page
                     while 1:
                         try:
+                            if page_counter > 20:
+                                time.sleep(300)
+                            else:
+                                pass
                             url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
                             driver.get(url)
 
@@ -147,6 +157,7 @@ class WomenGift(Scrapetsy):
                                 try:
                                     i += 1
                                     url_result = item.find_element(By.XPATH, f'/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[{i}]/div/div/a[1]').get_attribute('href')
+                                    print(i, url_result)
                                     url_list.append(url_result)
                                 except FileNotFoundError:
                                     break
@@ -158,6 +169,8 @@ class WomenGift(Scrapetsy):
 
                     print('getting url completed')
                 else:
+                    options = selenium.webdriver.chrome.options.Options()
+                    options.add_argument("--headless")
                     driver = webdriver.Chrome(executable_path=self.webdriver_path, options=options)
 
                     # looping for page
@@ -178,8 +191,7 @@ class WomenGift(Scrapetsy):
                             for item in children:
                                 try:
                                     i += 1
-                                    url_result = item.find_element(By.XPATH, f'/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[{i}]/div/div/a[1]').get_attribute(
-                                        'href')
+                                    url_result = item.find_element(By.XPATH, f'/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[{i}]/div/div/a[1]').get_attribute('href')
                                     url_list.append(url_result)
                                 except FileNotFoundError:
                                     break
@@ -258,10 +270,10 @@ class WomenGift(Scrapetsy):
         if self.driver_mode is True:
 
             # config webdriver
-            options = Options()
-            options.add_argument("--headless")
             drivertype = self.webdriver_path.rsplit("/", 1)[1]
             if drivertype == 'geckodriver.exe':
+                options = selenium.webdriver.firefox.options.Options()
+                options.add_argument("--headless")
                 driver = webdriver.Firefox(executable_path=self.webdriver_path, options=options)
 
                 driver.get(url)
@@ -294,6 +306,8 @@ class WomenGift(Scrapetsy):
 
                 driver.quit()
             else:
+                options = selenium.webdriver.chrome.options.Options()
+                options.add_argument("--headless")
                 driver = webdriver.Chrome(executable_path=self.webdriver_path, options=options)
 
                 driver.get(url)
