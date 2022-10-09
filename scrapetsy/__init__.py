@@ -30,7 +30,7 @@ class Scrapetsy:
         self.description = description
         self.webdriver_path = webdriver_path
         self.driver_mode = driver_mode
-        self.headers = headers
+        self.headers = {'User-Agent': headers}
 
     # define parent class function
     def get_page(self):
@@ -47,7 +47,7 @@ class Scrapetsy:
 
 class WomenGift(Scrapetsy):
     # define variable in child class WomanGift
-    def __init__(self, webdriver_path, driver_mode=False, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'}):
+    def __init__(self, webdriver_path, driver_mode=False, headers='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'):
         super().__init__(
             # https://www.etsy.com/search?q=gift+for+women&ref=pagination&anchor_listing_id=737271222&page=1
             scheme='https',
@@ -57,7 +57,7 @@ class WomenGift(Scrapetsy):
             description={'title': 'Most Popular Women Gift', 'description': 'Class to get Most Popular Women Gift'},
             webdriver_path=webdriver_path,
             driver_mode=driver_mode,
-            headers=headers
+            headers={'User-Agent': headers}
         )
 
     # define function in child class WomanGift
@@ -71,19 +71,19 @@ class WomenGift(Scrapetsy):
         page = 1
         if self.driver_mode is True:
             if pagination is False:
-                # config webdriver
                 drivertype = self.webdriver_path.rsplit("/", 1)[1]
                 if drivertype == 'geckodriver.exe':
+
+                    # config webdriver
                     options = selenium.webdriver.firefox.options.Options()
                     options.add_argument("--headless")
                     options.add_argument("--no-sandbox")
                     options.add_argument("--disable-gpu")
                     options.add_argument("--disable-translate")
-                    # options.add_argument(f"--proxy-server={ip}")
-                    options.add_argument(f"user-agent={generate_user_agent()}")
+                    options.add_argument(f"user-agent={self.headers['User-Agent']}")
                     driver = webdriver.Firefox(executable_path=self.webdriver_path, options=options)
 
-                    # looping for page
+                    # get url
                     url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
                     driver.get(url)
 
@@ -111,7 +111,8 @@ class WomenGift(Scrapetsy):
                     options.add_argument("--disable-gpu")
                     options.add_argument("--disable-translate")
                     # options.add_argument(f"--proxy-server={ip}")
-                    options.add_argument(f"user-agent={generate_user_agent()}")
+                    # options.add_argument(f"user-agent={generate_user_agent()}")
+                    options.add_argument(f"user-agent={self.headers['User-Agent']}")
                     driver = webdriver.Chrome(executable_path=self.webdriver_path, options=options)
 
                     # looping for page
@@ -146,25 +147,34 @@ class WomenGift(Scrapetsy):
                     # looping for page
                     while 1:
                         try:
-                            options = selenium.webdriver.firefox.options.Options()
-                            options.add_argument("--headless")
-                            options.add_argument("--no-sandbox")
-                            options.add_argument("--disable-gpu")
-                            options.add_argument("--disable-translate")
-                            # options.add_argument(f"--proxy-server={ip}")
-                            options.add_argument(f"user-agent={generate_user_agent()}")
-                            driver = webdriver.Firefox(executable_path=self.webdriver_path, options=options)
-                            url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
-                            driver.get(url)
+                            c = 1
+                            while c < 6:
+                                try:
+                                    options = selenium.webdriver.firefox.options.Options()
+                                    options.add_argument("--headless")
+                                    options.add_argument("--no-sandbox")
+                                    options.add_argument("--disable-gpu")
+                                    options.add_argument("--disable-translate")
+                                    # options.add_argument(f"--proxy-server={ip}")
+                                    # options.add_argument(f"user-agent={generate_user_agent()}")
+                                    options.add_argument(f"user-agent={self.headers['User-Agent']}")
+                                    driver = webdriver.Firefox(executable_path=self.webdriver_path, options=options)
+                                    url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
+                                    driver.get(url)
 
-                            # Wait for response until ID 'content' located
-                            content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[64]/div/div/a[1]')))
+                                    # Wait for response until ID 'content' located
+                                    content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[64]/div/div/a[1]')))
+                                    break
+                                except:
+                                    print(f"{c} trials")
+                                    driver.refresh()
+                                    c += 1
+
 
                             # Selecting Element to get url
                             parent = content.find_element(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul')
                             children = parent.find_elements(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li')
                             i = 0
-                            print(len(children))
                             print(page)
                             for item in children:
                                 try:
@@ -192,7 +202,8 @@ class WomenGift(Scrapetsy):
                             options.add_argument("--disable-gpu")
                             options.add_argument("--disable-translate")
                             # options.add_argument(f"--proxy-server={ip}")
-                            options.add_argument(f"user-agent={generate_user_agent()}")
+                            # options.add_argument(f"user-agent={generate_user_agent()}")
+                            options.add_argument(f"user-agent={self.headers['User-Agent']}")
                             driver = webdriver.Chrome(executable_path=self.webdriver_path, options=options)
                             url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
                             driver.get(url)
@@ -204,7 +215,6 @@ class WomenGift(Scrapetsy):
                             parent = content.find_element(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul')
                             children = parent.find_elements(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li')
                             i = 0
-                            print(len(children))
                             print(page)
                             for item in children:
                                 try:
