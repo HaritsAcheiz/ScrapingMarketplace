@@ -4,8 +4,8 @@ This code wil get all information from www.etsy.com for popular woman gift
 import scrapetsy
 
 if __name__ == '__main__':
-    scraper = scrapetsy.WomenGift(webdriver_path='C:/geckodriver-v0.31.0-win64/geckodriver.exe', driver_mode=True)
-    urls = scraper.get_url(pagination=True)
+    scraper = scrapetsy.WomenGift(webdriver_path='C:/geckodriver-v0.31.0-win64/geckodriver.exe', driver_mode=False)
+    urls = scraper.get_url(pagination=False)
     print('getting details...')
     result = []
     for i in urls:

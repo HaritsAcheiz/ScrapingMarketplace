@@ -236,7 +236,7 @@ class WomenGift(Scrapetsy):
                 url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
                 try:
                     with requests.Session() as session:
-                        response = session.get(url, headers=self.headers)
+                        response = session.get(url, headers=self.headers['User-Agent'])
                 except ConnectionError:
                     response = 'invalid format'
                 if response != 'invalid format':
@@ -260,14 +260,13 @@ class WomenGift(Scrapetsy):
                     url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
                     try:
                         with requests.Session() as session:
-                            response = session.get(url, headers=self.headers)
+                            response = session.get(url, headers=self.headers['User-Agent'])
                     except ConnectionError:
                         break
                     if response != 'invalid format':
                         if response.status_code == 200:
                             soup = BeautifulSoup(response.text, "html.parser")
-                            parent = soup.find('ul',
-                                               {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
+                            parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
                             children = parent.find_all('li')
                             i = 1
                             for item in children:
@@ -373,7 +372,7 @@ class WomenGift(Scrapetsy):
         else:
             try:
                 with requests.Session() as session:
-                    response = session.get(url, headers=self.headers)
+                    response = session.get(url, headers=self.headers['User-Agent'])
             except ConnectionError:
                 response = 'invalid format'
             if response != 'invalid format':
