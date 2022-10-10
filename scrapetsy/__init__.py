@@ -6,8 +6,6 @@ import os
 import selenium.webdriver.firefox.options
 from selenium import webdriver
 import selenium.webdriver.chrome.options
-# from selenium.webdriver.firefox.options import Options
-# from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
@@ -15,10 +13,7 @@ import json
 import csv
 import requests
 from bs4 import BeautifulSoup
-from lxml import etree
-# import time
-from user_agent import generate_user_agent
-
+from requests_html import HTMLSession
 
 class Scrapetsy:
     # define parent class variable
@@ -234,25 +229,33 @@ class WomenGift(Scrapetsy):
         else:
             if pagination is False:
                 url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
+                # try:
+                #     with requests.Session() as session:
+                #         response = session.get(url, headers=self.headers['User-Agent'])
+                # except ConnectionError:
+                #     response = 'invalid format'
                 try:
-                    with requests.Session() as session:
+                    with HTMLSession() as session:
                         response = session.get(url, headers=self.headers['User-Agent'])
+                        response.html.render(timeout=20)
                 except ConnectionError:
                     response = 'invalid format'
                 if response != 'invalid format':
                     if response.status_code == 200:
-                        soup = BeautifulSoup(response.text, "html.parser")
+                        soup = BeautifulSoup(response.html.html, "html.parser")
+                        print(soup)
                         parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
                         children = parent.find_all('li')
                         i = 1
                         for item in children:
-                            htmlparser = etree.HTMLParser()
-                            tree = etree.parse(item,htmlparser)
-                            url = tree.xpath(f'/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[{i}]/div/div/a[1]')['href']
-                            url_list.append(url)
-                            i += 1
-                            # url = item.find('a', {'class': 'listing-link wt-display-inline-block b105b708a1788d6d2 logged'})['href']
-                            # url_list.append(url)
+                            try:
+                                print(f'\n\nitem {i}\n\n')
+                                print(item)
+                                url = item.find('a', {'class': 'listing-link'})['href']
+                                url_list.append(url)
+                                i += 1
+                            except FileNotFoundError:
+                                break
                     else:
                         print(response.status_code)
             else:
@@ -268,19 +271,12 @@ class WomenGift(Scrapetsy):
                             soup = BeautifulSoup(response.text, "html.parser")
                             parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
                             children = parent.find_all('li')
-                            i = 1
                             for item in children:
                                 try:
-                                    htmlparser = etree.HTMLParser()
-                                    tree = etree.parse(item, htmlparser)
-                                    url = tree.xpath(f'/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[{i}]/div/div/a[1]')['href']
+                                    url = item.find('a', {'class': 'listing-link wt'})['href']
                                     url_list.append(url)
-                                    i += 1
                                 except FileNotFoundError:
                                     break
-                                # url = item.find('a', {'class': 'listing-link wt-display-inline-block b105b708a1788d6d2.logged'})['href']
-                                # url_list.append(url)
-                            page += 1
                         else:
                             print(response.status_code)
 

@@ -8,7 +8,9 @@ if __name__ == '__main__':
     urls = scraper.get_url(pagination=False)
     print('getting details...')
     result = []
+    # print(urls)
     for i in urls:
+        print(i)
         result.append(scraper.get_detail(i))
     print('getting details completed')
     print(result)
