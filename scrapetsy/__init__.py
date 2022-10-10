@@ -229,21 +229,16 @@ class WomenGift(Scrapetsy):
         else:
             if pagination is False:
                 url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
-                # try:
-                #     with requests.Session() as session:
-                #         response = session.get(url, headers=self.headers['User-Agent'])
-                # except ConnectionError:
-                #     response = 'invalid format'
                 try:
                     with HTMLSession() as session:
                         response = session.get(url, headers=self.headers['User-Agent'])
-                        response.html.render(timeout=20)
+                        response.html.render(timeout=20, scrolldown=True, sleep=10)
                 except ConnectionError:
                     response = 'invalid format'
                 if response != 'invalid format':
                     if response.status_code == 200:
                         soup = BeautifulSoup(response.html.html, "html.parser")
-                        print(soup)
+                        print(soup.prettify())
                         parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
                         children = parent.find_all('li')
                         i = 1
@@ -367,13 +362,15 @@ class WomenGift(Scrapetsy):
 
         else:
             try:
-                with requests.Session() as session:
-                    response = session.get(url, headers=self.headers['User-Agent'])
+               with HTMLSession() as session:
+                   response = session.get(url, headers=self.headers['User-Agent'])
+                   response.html.render(timeout=20)
             except ConnectionError:
                 response = 'invalid format'
+
             if response != 'invalid format':
                 if response.status_code == 200:
-                    soup = BeautifulSoup(response.text, "html.parser")
+                    soup = BeautifulSoup(response.html.html, "html.parser")
                     parent = soup.find('main', {'id': 'content'})
                     data['image'] = parent.find('li', {'class': 'carousel-pane'}).find('img')['src']
                     data['title'] = parent.find('h1', {'class': 'wt-text-body-03'}).text
