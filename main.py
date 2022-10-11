@@ -7,12 +7,12 @@ if __name__ == '__main__':
     scraper = scrapetsy.WomenGift(webdriver_path='C:/geckodriver-v0.31.0-win64/geckodriver.exe', driver_mode=False)
     urls = scraper.get_url(pagination=False)
     print('getting details...')
-    result = []
+    # result = []
     for i in urls:
         print(f"collecting {i}")
-        result.append(scraper.get_detail(i))
-    print('getting details completed')
-    print(result)
+    #     result.append(scraper.get_detail(i))
+    # print('getting details completed')
+    # print(result)
 
     # with open('C:/result/result.json') as f:
     #     data = json.load(f)
@@ -20,4 +20,4 @@ if __name__ == '__main__':
     # print(type(data))
     # print(data)
 
-    scraper.create_file(data=result, filepath='C:/project/ScrapingMarketplace/result/result.csv')
+    # scraper.create_file(data=result, filepath='C:/project/ScrapingMarketplace/result/result.csv')

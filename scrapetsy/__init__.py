@@ -1,8 +1,8 @@
 """
 all function and method for Scrapetsy
 """
-import os
 
+import os
 import selenium.webdriver.firefox.options
 from selenium import webdriver
 import selenium.webdriver.chrome.options
@@ -38,8 +38,6 @@ class Scrapetsy:
         self.create_file()
 
 # Class to get popular women gift
-
-
 class WomenGift(Scrapetsy):
     # define variable in child class WomanGift
     def __init__(self, webdriver_path, driver_mode=False, headers='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'):
@@ -64,9 +62,15 @@ class WomenGift(Scrapetsy):
         # initial variable
         url_list = []
         page = 1
+
+        # switch webdriver on
         if self.driver_mode is True:
+
+            # switch pagination off
             if pagination is False:
                 drivertype = self.webdriver_path.rsplit("/", 1)[1]
+
+                # switch firefox geckodriver
                 if drivertype == 'geckodriver.exe':
 
                     # config webdriver
@@ -99,6 +103,8 @@ class WomenGift(Scrapetsy):
                     driver.quit()
 
                     print('getting url completed')
+
+                # switch chrome driver
                 else:
                     options = selenium.webdriver.chrome.options.Options()
                     options.add_argument("--headless")
@@ -133,8 +139,9 @@ class WomenGift(Scrapetsy):
 
                     print('getting url completed')
 
-
+            # switch pagination on
             if pagination is True:
+
                 # config webdriver
                 drivertype = self.webdriver_path.rsplit("/", 1)[1]
                 if drivertype == 'geckodriver.exe':
@@ -180,14 +187,17 @@ class WomenGift(Scrapetsy):
                                 except FileNotFoundError:
                                     break
                             page += 1
-                            # page_counter += 1
                         except FileNotFoundError:
                             break
+
                     # Close driver
                     driver.quit()
 
                     print('getting url completed')
+
+                # switch chrome driver
                 else:
+
                     # looping for page
                     while 1:
                         try:
@@ -221,39 +231,53 @@ class WomenGift(Scrapetsy):
                             page += 1
                         except FileNotFoundError:
                             break
+
                     # Close driver
                     driver.quit()
 
                     print('getting url completed')
 
+        # switch webdriver mode off
         else:
+
+            # switch pagination off
             if pagination is False:
                 url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
                 try:
                     with HTMLSession() as session:
                         response = session.get(url, headers=self.headers['User-Agent'])
-                        response.html.render(timeout=20, scrolldown=True, sleep=10)
+                        response.html.render(wait=10, timeout=20, sleep=10)
+                    # session.close()
                 except ConnectionError:
-                    response = 'invalid format'
-                if response != 'invalid format':
-                    if response.status_code == 200:
-                        try:
-                            soup = BeautifulSoup(response.html.html, "html.parser")
-                            parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
-                            children = parent.find_all('li')
-                            i = 1
-                            for item in children:
-                                print(f'\n\nitem {i}\n\n')
-                                print(item)
-                                url = item.find('a', {'class': 'listing-link'})['href']
-                                url_list.append(url)
-                                i += 1
-                        except AttributeError:
-                            pass
-                        response.close()
-                    else:
-                        print(response.status_code)
-                        response.close()
+                    print(f"ConnectionError: {response.status_code}")
+
+                # Get URL
+                soup = BeautifulSoup(response.html.html, "html.parser")
+                parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
+                children = parent.find_all('li')
+                i = 1
+                for item in children:
+                    url = item.find('a', {'class': 'listing-link'})['href']
+                    url_list.append(url)
+                    i += 1
+
+                # try:
+                #     soup = BeautifulSoup(response.html.text, "html.parser")
+                #     parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
+                #     children = parent.find_all('li')
+                #     i = 1
+                #     for item in children:
+                #         print(f'\n\nitem {i}\n\n')
+                #         print(item)
+                #         url = item.find('a', {'class': 'listing-link'})['href']
+                #         url_list.append(url)
+                #         i += 1
+                #
+                # except AttributeError:
+                #     pass
+                #     print('AttributeError')
+
+            # switch pagination on
             else:
                 while 1:
                     url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
