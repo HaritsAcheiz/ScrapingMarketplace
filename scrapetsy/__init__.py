@@ -237,22 +237,23 @@ class WomenGift(Scrapetsy):
                     response = 'invalid format'
                 if response != 'invalid format':
                     if response.status_code == 200:
-                        soup = BeautifulSoup(response.html.html, "html.parser")
-                        print(soup.prettify())
-                        parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
-                        children = parent.find_all('li')
-                        i = 1
-                        for item in children:
-                            try:
+                        try:
+                            soup = BeautifulSoup(response.html.html, "html.parser")
+                            parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
+                            children = parent.find_all('li')
+                            i = 1
+                            for item in children:
                                 print(f'\n\nitem {i}\n\n')
                                 print(item)
                                 url = item.find('a', {'class': 'listing-link'})['href']
                                 url_list.append(url)
                                 i += 1
-                            except FileNotFoundError:
-                                break
+                        except AttributeError:
+                            pass
+                        response.close()
                     else:
                         print(response.status_code)
+                        response.close()
             else:
                 while 1:
                     url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
@@ -344,7 +345,10 @@ class WomenGift(Scrapetsy):
                 data['outlet_name'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').text
                 data['link_outlet'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').get_attribute(
                     'href')
-                data['item_sold'] = content.find_element(By.XPATH, '/html/body/main/div[1]/div[1]/div/div/div[1]/div[2]/div/div[1]/div/div[2]/div/span[2]').text
+                try:
+                    data['item_sold'] = content.find_element(By.XPATH, '/html/body/main/div[1]/div[1]/div/div/div[1]/div[2]/div/div[1]/div/div[2]/div/span[2]').text
+                except AttributeError:
+                    data['item_sold'] = '0'
 
                 # get detail
                 details = content.find_element(By.CSS_SELECTOR, 'ul.wt-text-body-01')
@@ -362,15 +366,14 @@ class WomenGift(Scrapetsy):
 
         else:
             try:
-               with HTMLSession() as session:
+               with requests.Session() as session:
                    response = session.get(url, headers=self.headers['User-Agent'])
-                   response.html.render(timeout=20)
             except ConnectionError:
                 response = 'invalid format'
 
             if response != 'invalid format':
                 if response.status_code == 200:
-                    soup = BeautifulSoup(response.html.html, "html.parser")
+                    soup = BeautifulSoup(response.text, "html.parser")
                     parent = soup.find('main', {'id': 'content'})
                     data['image'] = parent.find('li', {'class': 'carousel-pane'}).find('img')['src']
                     data['title'] = parent.find('h1', {'class': 'wt-text-body-03'}).text
@@ -380,12 +383,15 @@ class WomenGift(Scrapetsy):
                     prices2 = prices1.find_all('span')
                     try:
                         data['price'] = prices2[-1].text
-                    except FileNotFoundError:
+                    except IndexError:
                         data['price'] = prices1.text
 
                     data['outlet_name'] = parent.find('a', {'class': 'wt-text-link-no-underline'}).find('span').text
                     data['link_outlet'] = parent.find('a', {'class': 'wt-text-link-no-underline'})['href']
-                    data['item_sold'] = parent.find('div', {'class': 'wt-display-inline-flex-xs wt-align-items-center wt-flex-wrap wt-mb-xs-2'}).find('span', {'class': 'wt-text-caption '}).text
+                    try:
+                        data['item_sold'] = parent.find('div', {'class': 'wt-display-inline-flex-xs wt-align-items-center wt-flex-wrap wt-mb-xs-2'}).find('span', {'class': 'wt-text-caption '}).text
+                    except AttributeError:
+                        data['item_sold'] = 0
 
                     # Get Detail
                     detail_list = []
@@ -396,7 +402,9 @@ class WomenGift(Scrapetsy):
                     data['description'] = parent.find('p', {'class': 'wt-break-word'}).text
                     data['reviews'] = parent.find('h2', {'class': 'wt-mr-xs-2'}).text
                     data['url'] = url
+                    response.close()
                 else:
+                    response.close()
                     print(response.status_code)
 
         return data
