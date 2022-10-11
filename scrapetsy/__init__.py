@@ -17,7 +17,7 @@ from requests_html import HTMLSession
 
 class Scrapetsy:
     # define parent class variable
-    def __init__(self, scheme, host, filename, params, description, webdriver_path, driver_mode, headers):
+    def __init__(self, scheme, host, filename, params, description, webdriver_path, driver_mode, detail_driver, headers):
         self.scheme = scheme
         self.host = host
         self.params = params
@@ -25,6 +25,7 @@ class Scrapetsy:
         self.description = description
         self.webdriver_path = webdriver_path
         self.driver_mode = driver_mode
+        self.detail_driver = detail_driver
         self.headers = {'User-Agent': headers}
 
     # define parent class function
@@ -40,7 +41,7 @@ class Scrapetsy:
 # Class to get popular women gift
 class WomenGift(Scrapetsy):
     # define variable in child class WomanGift
-    def __init__(self, webdriver_path, driver_mode=False, headers='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'):
+    def __init__(self, webdriver_path, driver_mode=False, detail_driver=False, headers='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'):
         super().__init__(
             # https://www.etsy.com/search?q=gift+for+women&ref=pagination&anchor_listing_id=737271222&page=1
             scheme='https',
@@ -50,6 +51,7 @@ class WomenGift(Scrapetsy):
             description={'title': 'Most Popular Women Gift', 'description': 'Class to get Most Popular Women Gift'},
             webdriver_path=webdriver_path,
             driver_mode=driver_mode,
+            detail_driver=detail_driver,
             headers={'User-Agent': headers}
         )
 
@@ -94,7 +96,6 @@ class WomenGift(Scrapetsy):
                     children = parent.find_elements(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li')
                     i = 1
                     for item in children:
-                        print(item)
                         url_result = item.find_element(By.XPATH, f'/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[{i}]/div/div/a[1]').get_attribute('href')
                         url_list.append(url_result)
                         i += 1
@@ -102,7 +103,7 @@ class WomenGift(Scrapetsy):
                     # Close driver
                     driver.quit()
 
-                    print('getting url completed')
+                    print(f'{len(url_list)} urls collected')
 
                 # switch chrome driver
                 else:
@@ -128,7 +129,6 @@ class WomenGift(Scrapetsy):
                     children = parent.find_elements(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li')
                     i = 1
                     for item in children:
-                        print(item)
                         url_result = item.find_element(By.XPATH, f'/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[{i}]/div/div/a[1]').get_attribute(
                             'href')
                         url_list.append(url_result)
@@ -137,7 +137,7 @@ class WomenGift(Scrapetsy):
                     # Close driver
                     driver.quit()
 
-                    print('getting url completed')
+                    print(f'{len(url_list)} urls collected')
 
             # switch pagination on
             if pagination is True:
@@ -167,7 +167,7 @@ class WomenGift(Scrapetsy):
                                     # Wait for response until ID 'content' located
                                     content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[64]/div/div/a[1]')))
                                     break
-                                except:
+                                except AttributeError:
                                     print(f"{c} trials")
                                     driver.refresh()
                                     c += 1
@@ -177,23 +177,24 @@ class WomenGift(Scrapetsy):
                             parent = content.find_element(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul')
                             children = parent.find_elements(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li')
                             i = 0
-                            print(page)
                             for item in children:
                                 try:
                                     i += 1
                                     url_result = item.find_element(By.XPATH, f'/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[{i}]/div/div/a[1]').get_attribute('href')
                                     print(i, url_result)
                                     url_list.append(url_result)
-                                except FileNotFoundError:
+                                except AttributeError:
+                                    print('Attribute Error')
                                     break
                             page += 1
-                        except FileNotFoundError:
+                        except AttributeError:
+                            print('Attribute Error')
                             break
 
                     # Close driver
                     driver.quit()
 
-                    print('getting url completed')
+                    print(f'{len(url_list)} urls collected')
 
                 # switch chrome driver
                 else:
@@ -226,16 +227,18 @@ class WomenGift(Scrapetsy):
                                     i += 1
                                     url_result = item.find_element(By.XPATH, f'/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[{i}]/div/div/a[1]').get_attribute('href')
                                     url_list.append(url_result)
-                                except FileNotFoundError:
+                                except AttributeError:
+                                    print('Attribute Error')
                                     break
                             page += 1
-                        except FileNotFoundError:
+                        except AttributeError:
+                            print('Attribute Error')
                             break
 
                     # Close driver
                     driver.quit()
 
-                    print('getting url completed')
+                    print(f'{len(url_list)} urls collected')
 
         # switch webdriver mode off
         else:
@@ -246,59 +249,62 @@ class WomenGift(Scrapetsy):
                 try:
                     with HTMLSession() as session:
                         response = session.get(url, headers=self.headers['User-Agent'])
-                        response.html.render(wait=10, timeout=20, sleep=10)
-                    # session.close()
+                        response.html.render(wait=20, timeout=200, sleep=20)
+
+                    # with AsyncHTMLSession() as session:
+                    #     response = session.get(url, headers=self.headers['User-Agent'])
+                    #     await response.html.arender()
+
                 except ConnectionError:
                     print(f"ConnectionError: {response.status_code}")
 
-                # Get URL
-                soup = BeautifulSoup(response.html.html, "html.parser")
-                parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
-                children = parent.find_all('li')
-                i = 1
-                for item in children:
-                    url = item.find('a', {'class': 'listing-link'})['href']
-                    url_list.append(url)
-                    i += 1
+                try:
+                    soup = BeautifulSoup(response.html.html, "html.parser")
+                    print(soup)
+                    # response.close()
+                    parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
+                    children = parent.find_all('li')
+                    i = 1
+                    for item in children:
+                        url = item.find('a', {'class': 'listing-link'})['href']
+                        url_list.append(url)
+                        i += 1
 
-                # try:
-                #     soup = BeautifulSoup(response.html.text, "html.parser")
-                #     parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
-                #     children = parent.find_all('li')
-                #     i = 1
-                #     for item in children:
-                #         print(f'\n\nitem {i}\n\n')
-                #         print(item)
-                #         url = item.find('a', {'class': 'listing-link'})['href']
-                #         url_list.append(url)
-                #         i += 1
-                #
-                # except AttributeError:
-                #     pass
-                #     print('AttributeError')
+                except AttributeError:
+                    print('AttributeError')
 
             # switch pagination on
             else:
                 while 1:
                     url = f"{self.scheme}://{self.host}{self.filename}?q={self.params['q']}&ref={self.params['ref']}&anchor_listing_id={self.params['anchor_listing_id']}&page={str(page)}"
                     try:
-                        with requests.Session() as session:
+                        with HTMLSession() as session:
                             response = session.get(url, headers=self.headers['User-Agent'])
+                            response.html.render(wait=20, timeout=200, sleep=20)
+
+                        # with AsyncHTMLSession() as session:
+                        #     response = session.get(url, headers=self.headers['User-Agent'])
+                        #     await response.html.arender()
+
                     except ConnectionError:
+                        print(f"ConnectionError: {response.status_code}")
                         break
-                    if response != 'invalid format':
-                        if response.status_code == 200:
-                            soup = BeautifulSoup(response.text, "html.parser")
-                            parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
-                            children = parent.find_all('li')
-                            for item in children:
-                                try:
-                                    url = item.find('a', {'class': 'listing-link wt'})['href']
-                                    url_list.append(url)
-                                except FileNotFoundError:
-                                    break
-                        else:
-                            print(response.status_code)
+
+                    try:
+                        soup = BeautifulSoup(response.html.html, "html.parser")
+                        # response.close()
+                        parent = soup.find('ul', {'class': 'wt-grid wt-grid--block wt-pl-xs-0 tab-reorder-container'})
+                        children = parent.find_all('li')
+                        i = 1
+                        for item in children:
+                            url = item.find('a', {'class': 'listing-link'})['href']
+                            url_list.append(url)
+                            i += 1
+                        page += 1
+
+                    except AttributeError:
+                        print(f'{len(url_list)} urls collected')
+                        break
 
         return url_list
 
@@ -310,10 +316,13 @@ class WomenGift(Scrapetsy):
 
         print(f'collecting {url}')
 
-        if self.driver_mode is True:
+        # detail driver on
+        if self.detail_driver is True:
 
-            # config webdriver
+            # get driver type
             drivertype = self.webdriver_path.rsplit("/", 1)[1]
+
+            # switch geckodriver
             if drivertype == 'geckodriver.exe':
                 options = selenium.webdriver.firefox.options.Options()
                 options.add_argument("--headless")
@@ -329,8 +338,9 @@ class WomenGift(Scrapetsy):
                 prices2 = prices1.find_elements(By.TAG_NAME, 'span')
                 try:
                     data['price'] = prices2[-1].text
-                except FileNotFoundError:
+                except IndexError:
                     data['price'] = prices1.text
+
                 data['outlet_name'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').text
                 data['link_outlet'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').get_attribute('href')
                 data['item_sold'] = content.find_element(By.XPATH, '/html/body/main/div[1]/div[1]/div/div/div[1]/div[2]/div/div[1]/div/div[2]/div/span[2]').text
@@ -348,6 +358,8 @@ class WomenGift(Scrapetsy):
                 data['url'] = url
 
                 driver.quit()
+
+            # switch chromedriver
             else:
                 options = selenium.webdriver.chrome.options.Options()
                 options.add_argument("--headless")
@@ -364,23 +376,28 @@ class WomenGift(Scrapetsy):
                 prices2 = prices1.find_elements(By.TAG_NAME, 'span')
                 try:
                     data['price'] = prices2[-1].text
-                except FileNotFoundError:
+                except IndexError:
                     data['price'] = prices1.text
+
                 data['outlet_name'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').text
                 data['link_outlet'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').get_attribute(
                     'href')
+
+                # get sales
                 try:
                     data['item_sold'] = content.find_element(By.XPATH, '/html/body/main/div[1]/div[1]/div/div/div[1]/div[2]/div/div[1]/div/div[2]/div/span[2]').text
                 except AttributeError:
                     data['item_sold'] = '0'
 
-                # get detail
-                details = content.find_element(By.CSS_SELECTOR, 'ul.wt-text-body-01')
-                details = details.find_elements(By.TAG_NAME, 'li')
-                detail_list = []
-                for j in details:
-                    detail_list.append(j.text)
-                data['detail'] = detail_list
+                # Get Detail
+                try:
+                    detail_list = []
+                    details = content.find('ul', {'class': 'wt-text-body-01'}).find_all('li')
+                    for j in details:
+                        detail_list.append(j.text)
+                    data['detail'] = detail_list
+                except AttributeError:
+                    data['detail'] = ''
 
                 data['description'] = content.find_element(By.CSS_SELECTOR, 'p.wt-break-word').text
                 data['reviews'] = content.find_element(By.CSS_SELECTOR, 'h2.wt-mr-xs-2').text
@@ -388,48 +405,60 @@ class WomenGift(Scrapetsy):
 
                 driver.quit()
 
+        # detail driver off
         else:
             try:
-               with requests.Session() as session:
-                   response = session.get(url, headers=self.headers['User-Agent'])
+                with HTMLSession() as session:
+                    response = session.get(url, headers=self.headers['User-Agent'])
+                    response.html.render(wait=15, timeout=100)
+
             except ConnectionError:
-                response = 'invalid format'
+                print(f"ConnectionError: {response.status_code}")
 
-            if response != 'invalid format':
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.text, "html.parser")
-                    parent = soup.find('main', {'id': 'content'})
-                    data['image'] = parent.find('li', {'class': 'carousel-pane'}).find('img')['src']
-                    data['title'] = parent.find('h1', {'class': 'wt-text-body-03'}).text
+            # try:
+            #     with requests.Session() as session:
+            #         response = session.get(url, headers=self.headers['User-Agent'])
 
-                    # Get Price
-                    prices1 = parent.find('p', {'class': 'wt-text-title-03 wt-mr-xs-1'})
-                    prices2 = prices1.find_all('span')
-                    try:
-                        data['price'] = prices2[-1].text
-                    except IndexError:
-                        data['price'] = prices1.text
+            # except ConnectionError:
+            #     print(f"ConnectionError: {response.status_code}")
 
-                    data['outlet_name'] = parent.find('a', {'class': 'wt-text-link-no-underline'}).find('span').text
-                    data['link_outlet'] = parent.find('a', {'class': 'wt-text-link-no-underline'})['href']
-                    try:
-                        data['item_sold'] = parent.find('div', {'class': 'wt-display-inline-flex-xs wt-align-items-center wt-flex-wrap wt-mb-xs-2'}).find('span', {'class': 'wt-text-caption '}).text
-                    except AttributeError:
-                        data['item_sold'] = 0
+            soup = BeautifulSoup(response.html.html, "html.parser")
+            # soup = BeautifulSoup(response.text, "html.parser")
+            response.close()
+            parent = soup.find('main', {'id': 'content'})
+            data['image'] = parent.find('li', {'class': 'carousel-pane'}).find('img')['src']
+            data['title'] = parent.find('h1', {'class': 'wt-text-body-03'}).text
 
-                    # Get Detail
-                    detail_list = []
-                    details = parent.find('ul', {'class': 'wt-text-body-01'}).find_all('li')
-                    for j in details:
-                        detail_list.append(j.text)
-                    data['detail'] = detail_list
-                    data['description'] = parent.find('p', {'class': 'wt-break-word'}).text
-                    data['reviews'] = parent.find('h2', {'class': 'wt-mr-xs-2'}).text
-                    data['url'] = url
-                    response.close()
-                else:
-                    response.close()
-                    print(response.status_code)
+            # Get Price
+            prices1 = parent.find('p', {'class': 'wt-text-title-03 wt-mr-xs-1'})
+            prices2 = prices1.find_all('span')
+            try:
+                data['price'] = prices2[-1].text
+            except IndexError:
+                data['price'] = prices1.text
+
+            data['outlet_name'] = parent.find('a', {'class': 'wt-text-link-no-underline'}).find('span').text
+            data['link_outlet'] = parent.find('a', {'class': 'wt-text-link-no-underline'})['href']
+
+            # Get sales
+            try:
+                data['item_sold'] = parent.find('div', {'class': 'wt-display-inline-flex-xs wt-align-items-center wt-flex-wrap wt-mb-xs-2'}).find('span', {'class': 'wt-text-caption '}).text
+            except AttributeError:
+                data['item_sold'] = 0
+
+            # Get Detail
+            try:
+                detail_list = []
+                details = parent.find('ul', {'class': 'wt-text-body-01'}).find_all('li')
+                for j in details:
+                    detail_list.append(j.text)
+                data['detail'] = detail_list
+            except AttributeError:
+                data['detail'] = ''
+
+            data['description'] = parent.find('p', {'class': 'wt-break-word'}).text
+            data['reviews'] = parent.find('h2', {'class': 'wt-mr-xs-2'}).text
+            data['url'] = url
 
         return data
 
