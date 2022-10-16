@@ -4,6 +4,7 @@ all function and method for Scrapetsy
 
 import os
 import selenium.webdriver.firefox.options
+from selenium.common.exceptions import NoSuchElementException
 from selenium import webdriver
 import selenium.webdriver.chrome.options
 from selenium.webdriver.common.by import By
@@ -11,7 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import json
 import csv
-import requests
+import time
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession
 
@@ -90,6 +91,7 @@ class WomenGift(Scrapetsy):
 
                     # Wait for response until ID 'content' located
                     content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.ID, 'content')))
+                    time.sleep(10)
 
                     # Selecting Element to get url
                     parent = content.find_element(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul')
@@ -123,6 +125,7 @@ class WomenGift(Scrapetsy):
 
                     # Wait for response until ID 'content' located
                     content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.ID, 'content')))
+                    time.sleep(10)
 
                     # Selecting Element to get url
                     parent = content.find_element(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul')
@@ -166,6 +169,7 @@ class WomenGift(Scrapetsy):
 
                                     # Wait for response until ID 'content' located
                                     content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[64]/div/div/a[1]')))
+                                    time.sleep(10)
                                     break
                                 except AttributeError:
                                     print(f"{c} trials")
@@ -216,6 +220,7 @@ class WomenGift(Scrapetsy):
 
                             # Wait for response until ID 'content' located
                             content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul/li[64]/div/div/a[1]')))
+                            time.sleep(10)
 
                             # Selecting Element to get url
                             parent = content.find_element(By.XPATH, '/html/body/main/div/div[1]/div/div[3]/div[5]/div[4]/div[9]/div[1]/div/div/ul')
@@ -343,7 +348,13 @@ class WomenGift(Scrapetsy):
 
                 data['outlet_name'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').text
                 data['link_outlet'] = content.find_element(By.CSS_SELECTOR, '#listing-page-cart > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1) > a:nth-child(1)').get_attribute('href')
-                data['item_sold'] = content.find_element(By.XPATH, '/html/body/main/div[1]/div[1]/div/div/div[1]/div[2]/div/div[1]/div/div[2]/div/span[2]').text
+
+                # get sales
+                try:
+                    data['item_sold'] = content.find_element(By.XPATH, '/html/body/main/div[1]/div[1]/div/div/div[1]/div[2]/div/div[1]/div/div[2]/div/span[2]').text
+                # except AttributeError:
+                except NoSuchElementException:
+                    data['item_sold'] = '0'
 
                 # get detail
                 details = content.find_element(By.CSS_SELECTOR, 'ul.wt-text-body-01')
@@ -367,6 +378,7 @@ class WomenGift(Scrapetsy):
 
                 driver.get(url)
                 content = WebDriverWait(driver, 30).until(ec.presence_of_element_located((By.ID, 'content')))
+                time.sleep(10)
                 data['image'] = content.find_element(By.CSS_SELECTOR, 'li.carousel-pane:nth-child(1) > img:nth-child(1)').get_attribute(
                     'src')
                 data['title'] = content.find_element(By.CSS_SELECTOR, 'h1.wt-text-body-03').text
